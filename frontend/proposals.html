@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposals - AI-Powered RFP Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-file-contract"></i>
+                <span>RFP Manager</span>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-dashboard"></i> Dashboard
+                </a>
+                <a href="create-rfp.html" class="nav-link">
+                    <i class="fas fa-plus-circle"></i> Create RFP
+                </a>
+                <a href="vendors.html" class="nav-link">
+                    <i class="fas fa-users"></i> Vendors
+                </a>
+                <a href="send-rfp.html" class="nav-link">
+                    <i class="fas fa-paper-plane"></i> Send RFP
+                </a>
+                <a href="proposals.html" class="nav-link active">
+                    <i class="fas fa-chart-bar"></i> Proposals
+                </a>
+            </div>
+            <div class="nav-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="header-content">
+                    <div>
+                        <h1>Proposals Comparison</h1>
+                        <p>Analyze and compare vendor proposals with AI recommendations</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="compareProposals()">
+                        <i class="fas fa-robot"></i> AI Compare & Recommend
+                    </button>
+                </div>
+            </header>
+
+            <!-- RFP Selection -->
+            <section class="rfp-selection">
+                <div class="form-group">
+                    <label for="rfp-select">Select RFP</label>
+                    <select id="rfp-select" class="form-select" onchange="loadProposals()">
+                        <option value="">Choose an RFP...</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Proposals Content -->
+            <div id="proposals-content" class="proposals-content hidden">
+                <!-- AI Recommendation Section -->
+                <section id="ai-recommendation" class="ai-recommendation hidden">
+                    <h2><i class="fas fa-trophy"></i> AI Recommendation</h2>
+                    <div class="recommendation-card">
+                        <div class="recommendation-header">
+                            <div class="winner-badge">
+                                <i class="fas fa-crown"></i>
+                                <span>Recommended Vendor</span>
+                            </div>
+                            <div class="confidence-score">
+                                <span class="label">Confidence:</span>
+                                <span class="score" id="confidence-score">0%</span>
+                            </div>
+                        </div>
+                        <div class="winner-info">
+                            <h3 id="winner-name"></h3>
+                            <p id="winner-company"></p>
+                            <div class="winner-stats">
+                                <div class="stat">
+                                    <span class="label">Price:</span>
+                                    <span class="value" id="winner-price"></span>
+                                </div>
+                                <div class="stat">
+                                    <span class="label">Delivery:</span>
+                                    <span class="value" id="winner-delivery"></span>
+                                </div>
+                                <div class="stat">
+                                    <span class="label">AI Score:</span>
+                                    <span class="value" id="winner-score"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recommendation-reasoning">
+                            <h4>AI Reasoning:</h4>
+                            <p id="recommendation-reasoning"></p>
+                        </div>
+                        <div class="key-factors">
+                            <h4>Key Factors:</h4>
+                            <div id="key-factors-list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Proposals Comparison -->
+                <section id="proposals-comparison" class="proposals-comparison hidden">
+                    <h2>Proposals Comparison</h2>
+                    <div class="comparison-table-container">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Vendor</th>
+                                    <th>Total Price</th>
+                                    <th>Delivery Time</th>
+                                    <th>Warranty</th>
+                                    <th>AI Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparison-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Detailed Proposals -->
+                <section id="detailed-proposals" class="detailed-proposals hidden">
+                    <h2>Detailed Proposals</h2>
+                    <div class="proposals-grid" id="proposals-grid">
+                        <div class="loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading proposals...</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state">
+                <i class="fas fa-chart-bar"></i>
+                <h3>No Proposals Available</h3>
+                <p>Select an RFP to view and compare vendor proposals</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Proposal Detail Modal -->
+    <div id="proposal-modal" class="modal hidden">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 id="modal-title">Proposal Details</h2>
+                <button class="modal-close" onclick="closeProposalModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="proposal-detail-content" id="proposal-detail-content">
+                    <!-- Content will be populated dynamically -->
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeProposalModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        let rfps = [];
+        let proposals = [];
+        let selectedRFP = null;
+        let comparisonData = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRFPs();
+            
+            // Check for URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const rfpId = urlParams.get('rfp_id');
+            if (rfpId) {
+                setTimeout(() => {
+                    document.getElementById('rfp-select').value = rfpId;
+                    loadProposals();
+                }, 500);
+            }
+        });
+
+        async function loadRFPs() {
+            try {
+                const response = await fetch('/api/rfp/list');
+                const data = await response.json();
+
+                if (data.success) {
+                    rfps = data.rfps.filter(rfp => rfp.status === 'sent');
+                    populateRFPSelect();
+                } else {
+                    showToast('Error loading RFPs', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading RFPs:', error);
+                showToast('Error loading RFPs', 'error');
+            }
+        }
+
+        function populateRFPSelect() {
+            const select = document.getElementById('rfp-select');
+            
+            if (rfps.length === 0) {
+                select.innerHTML = '<option value="">No sent RFPs available</option>';
+                return;
+            }
+
+            select.innerHTML = '<option value="">Choose an RFP...</option>' +
+                rfps.map(rfp => `
+                    <option value="${rfp.id}">
+                        ${rfp.title} - ${rfp.proposals_count} proposals - $${rfp.budget.toLocaleString()}
+                    </option>
+                `).join('');
+        }
+
+        async function loadProposals() {
+            const rfpId = document.getElementById('rfp-select').value;
+            
+            if (!rfpId) {
+                showEmptyState();
+                return;
+            }
+
+            selectedRFP = rfps.find(rfp => rfp.id == rfpId);
+            if (!selectedRFP) return;
+
+            showLoading();
+            
+            try {
+                const response = await fetch(`/api/rfp/${rfpId}/proposals`);
+                const data = await response.json();
+
+                if (data.success) {
+                    proposals = data.proposals;
+                    displayProposals();
+                } else {
+                    showToast('Error loading proposals', 'error');
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error loading proposals:', error);
+                showToast('Error loading proposals', 'error');
+                showEmptyState();
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displayProposals() {
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('proposals-content').classList.remove('hidden');
+
+            if (proposals.length === 0) {
+                showNoProposalsState();
+                return;
+            }
+
+            // Show detailed proposals
+            showDetailedProposals();
+            
+            // Show comparison table
+            showComparisonTable();
+        }
+
+        function showEmptyState() {
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('proposals-content').classList.add('hidden');
+        }
+
+        function showNoProposalsState() {
+            document.getElementById('detailed-proposals').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No Proposals Received</h3>
+                    <p>No vendors have responded to this RFP yet</p>
+                    <button class="btn btn-outline" onclick="checkEmails()">
+                        <i class="fas fa-sync"></i> Check for New Emails
+                    </button>
+                </div>
+            `;
+        }
+
+        function showDetailedProposals() {
+            const container = document.getElementById('proposals-grid');
+            
+            container.innerHTML = proposals.map(proposal => `
+                <div class="proposal-card ${proposal.ai_score ? 'scored' : ''}">
+                    <div class="proposal-header">
+                        <div class="vendor-info">
+                            <h3>${proposal.vendor.name}</h3>
+                            <p>${proposal.vendor.company || 'No company'}</p>
+                        </div>
+                        ${proposal.ai_score ? `
+                            <div class="ai-score-badge">
+                                <i class="fas fa-star"></i>
+                                <span>${proposal.ai_score.toFixed(1)}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="proposal-pricing">
+                        <div class="price-main">
+                            <span class="price-label">Total Price</span>
+                            <span class="price-value">$${proposal.total_price.toLocaleString()}</span>
+                        </div>
+                        <div class="price-details">
+                            ${proposal.parsed_data.items ? proposal.parsed_data.items.map(item => `
+                                <div class="item-price">
+                                    <span>${item.name} x${item.quantity}</span>
+                                    <span>$${item.total_price.toLocaleString()}</span>
+                                </div>
+                            `).join('') : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="proposal-details">
+                        <div class="detail-item">
+                            <i class="fas fa-truck"></i>
+                            <span>Delivery: ${proposal.delivery_time || 'Not specified'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Warranty: ${proposal.warranty || 'Not specified'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Payment: ${proposal.parsed_data.payment_terms || 'Not specified'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="proposal-actions">
+                        <button class="btn btn-sm btn-outline" onclick="viewProposalDetails(${proposal.id})">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        ${proposal.ai_notes ? `
+                            <button class="btn btn-sm btn-primary" onclick="viewAINotes(${proposal.id})">
+                                <i class="fas fa-robot"></i> AI Analysis
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showComparisonTable() {
+            const tbody = document.getElementById('comparison-tbody');
+            
+            tbody.innerHTML = proposals.map(proposal => `
+                <tr>
+                    <td>
+                        <div class="vendor-cell">
+                            <strong>${proposal.vendor.name}</strong>
+                            <small>${proposal.vendor.company || ''}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="price-cell">
+                            <strong>$${proposal.total_price.toLocaleString()}</strong>
+                            <span class="price-diff">
+                                ${selectedRFP.budget ? 
+                                    (proposal.total_price <= selectedRFP.budget ? 
+                                        `<span class="under-budget">Under budget</span>` : 
+                                        `<span class="over-budget">$${(proposal.total_price - selectedRFP.budget).toLocaleString()} over</span>`) : 
+                                    ''}
+                            </span>
+                        </div>
+                    </td>
+                    <td>${proposal.delivery_time || 'Not specified'}</td>
+                    <td>${proposal.warranty || 'Not specified'}</td>
+                    <td>
+                        ${proposal.ai_score ? 
+                            `<div class="score-cell">
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${proposal.ai_score}%"></div>
+                                </div>
+                                <span>${proposal.ai_score.toFixed(1)}</span>
+                            </div>` : 
+                            '<span class="no-score">Not scored</span>'
+                        }
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline" onclick="viewProposalDetails(${proposal.id})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('proposals-comparison').classList.remove('hidden');
+        }
+
+        async function compareProposals() {
+            if (!selectedRFP || proposals.length === 0) {
+                showToast('No proposals available for comparison', 'error');
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/proposal/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rfp_id: selectedRFP.id
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    comparisonData = data.comparison;
+                    displayAIRecommendation();
+                    showToast('AI comparison completed!', 'success');
+                    
+                    // Reload proposals to get updated scores
+                    loadProposals();
+                } else {
+                    showToast('Error comparing proposals: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error comparing proposals:', error);
+                showToast('Error comparing proposals', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displayAIRecommendation() {
+            if (!comparisonData) return;
+
+            const recommendation = comparisonData.recommendation;
+            
+            // Update recommendation card
+            document.getElementById('confidence-score').textContent = `${(recommendation.confidence * 100).toFixed(0)}%`;
+            document.getElementById('winner-name').textContent = recommendation.best_vendor_name;
+            
+            // Find winner proposal
+            const winnerProposal = proposals.find(p => p.vendor.id === recommendation.best_vendor_id);
+            if (winnerProposal) {
+                document.getElementById('winner-company').textContent = winnerProposal.vendor.company || '';
+                document.getElementById('winner-price').textContent = `$${winnerProposal.total_price.toLocaleString()}`;
+                document.getElementById('winner-delivery').textContent = winnerProposal.delivery_time || 'Not specified';
+                document.getElementById('winner-score').textContent = winnerProposal.ai_score ? 
+                    `${winnerProposal.ai_score.toFixed(1)}/100` : 'Not scored';
+            }
+            
+            document.getElementById('recommendation-reasoning').textContent = recommendation.reasoning;
+            
+            // Display key factors
+            const factorsContainer = document.getElementById('key-factors-list');
+            factorsContainer.innerHTML = recommendation.key_factors.map(factor => `
+                <div class="factor-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${factor}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('ai-recommendation').classList.remove('hidden');
+        }
+
+        function viewProposalDetails(proposalId) {
+            const proposal = proposals.find(p => p.id === proposalId);
+            if (!proposal) return;
+
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('proposal-detail-content');
+            
+            modalTitle.textContent = `Proposal - ${proposal.vendor.name}`;
+            
+            modalContent.innerHTML = `
+                <div class="proposal-detail">
+                    <div class="detail-section">
+                        <h3>Vendor Information</h3>
+                        <div class="vendor-details">
+                            <p><strong>Name:</strong> ${proposal.vendor.name}</p>
+                            <p><strong>Company:</strong> ${proposal.vendor.company || 'Not specified'}</p>
+                            <p><strong>Email:</strong> ${proposal.vendor.email}</p>
+                            <p><strong>Phone:</strong> ${proposal.vendor.phone || 'Not specified'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Pricing Details</h3>
+                        <div class="pricing-details">
+                            <p><strong>Total Price:</strong> $${proposal.total_price.toLocaleString()}</p>
+                            ${proposal.parsed_data.items ? `
+                                <div class="items-breakdown">
+                                    <h4>Items Breakdown:</h4>
+                                    <table class="items-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Quantity</th>
+                                                <th>Unit Price</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${proposal.parsed_data.items.map(item => `
+                                                <tr>
+                                                    <td>${item.name}</td>
+                                                    <td>${item.quantity}</td>
+                                                    <td>$${item.unit_price.toLocaleString()}</td>
+                                                    <td>$${item.total_price.toLocaleString()}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Terms and Conditions</h3>
+                        <div class="terms-details">
+                            <p><strong>Delivery Time:</strong> ${proposal.delivery_time || 'Not specified'}</p>
+                            <p><strong>Warranty:</strong> ${proposal.warranty || 'Not specified'}</p>
+                            <p><strong>Payment Terms:</strong> ${proposal.parsed_data.payment_terms || 'Not specified'}</p>
+                            ${proposal.parsed_data.special_notes ? `
+                                <p><strong>Special Notes:</strong> ${proposal.parsed_data.special_notes}</p>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    ${proposal.ai_score ? `
+                        <div class="detail-section">
+                            <h3>AI Analysis</h3>
+                            <div class="ai-analysis-details">
+                                <p><strong>AI Score:</strong> ${proposal.ai_score.toFixed(1)}/100</p>
+                                ${proposal.ai_notes ? `
+                                    <p><strong>AI Notes:</strong> ${proposal.ai_notes}</p>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="detail-section">
+                        <h3>Original Email Content</h3>
+                        <div class="email-content">
+                            <pre>${proposal.original_email_content}</pre>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('proposal-modal').classList.remove('hidden');
+        }
+
+        function viewAINotes(proposalId) {
+            const proposal = proposals.find(p => p.id === proposalId);
+            if (!proposal || !proposal.ai_notes) return;
+
+            showToast(`AI Analysis: ${proposal.ai_notes}`, 'info', 5000);
+        }
+
+        function closeProposalModal() {
+            document.getElementById('proposal-modal').classList.add('hidden');
+        }
+
+        async function checkEmails() {
+            showLoading();
+            try {
+                const response = await fetch('/api/email/check', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(`Processed ${data.processed_emails} new emails`, 'success');
+                    loadProposals();
+                } else {
+                    showToast('Error checking emails', 'error');
+                }
+            } catch (error) {
+                console.error('Error checking emails:', error);
+                showToast('Error checking emails', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+    </script>
+</body>
+</html>

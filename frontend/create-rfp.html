@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create RFP - AI-Powered RFP Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-file-contract"></i>
+                <span>RFP Manager</span>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-dashboard"></i> Dashboard
+                </a>
+                <a href="create-rfp.html" class="nav-link active">
+                    <i class="fas fa-plus-circle"></i> Create RFP
+                </a>
+                <a href="vendors.html" class="nav-link">
+                    <i class="fas fa-users"></i> Vendors
+                </a>
+                <a href="send-rfp.html" class="nav-link">
+                    <i class="fas fa-paper-plane"></i> Send RFP
+                </a>
+                <a href="proposals.html" class="nav-link">
+                    <i class="fas fa-chart-bar"></i> Proposals
+                </a>
+            </div>
+            <div class="nav-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <h1>Create New RFP</h1>
+                <p>Use natural language to describe your procurement needs</p>
+            </header>
+
+            <!-- RFP Creation Form -->
+            <section class="rfp-creation">
+                <div class="creation-steps">
+                    <!-- Step 1: Natural Language Input -->
+                    <div class="step active" id="step-1">
+                        <div class="step-header">
+                            <h2><i class="fas fa-pen"></i> Describe Your Requirements</h2>
+                            <p>Write your procurement needs in plain English. Our AI will extract the details.</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="natural-input">Procurement Description</label>
+                            <textarea 
+                                id="natural-input" 
+                                placeholder="Example: I need 20 laptops with 16GB RAM and 15 monitors 27-inch. Budget $50,000. Delivery in 30 days. Payment net 30. 1 year warranty needed."
+                                rows="8"
+                            ></textarea>
+                        </div>
+                        
+                        <div class="example-prompts">
+                            <h3>Example Prompts:</h3>
+                            <div class="prompt-examples">
+                                <button class="example-btn" onclick="setExample('laptops')">
+                                    <i class="fas fa-laptop"></i>
+                                    Laptops & Monitors
+                                </button>
+                                <button class="example-btn" onclick="setExample('furniture')">
+                                    <i class="fas fa-couch"></i>
+                                    Office Furniture
+                                </button>
+                                <button class="example-btn" onclick="setExample('software')">
+                                    <i class="fas fa-code"></i>
+                                    Software Licenses
+                                </button>
+                                <button class="example-btn" onclick="setExample('infrastructure')">
+                                    <i class="fas fa-server"></i>
+                                    IT Infrastructure
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="step-actions">
+                            <button class="btn btn-primary btn-lg" onclick="generateRFP()">
+                                <i class="fas fa-magic"></i> Generate RFP with AI
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: AI Generated RFP -->
+                    <div class="step hidden" id="step-2">
+                        <div class="step-header">
+                            <h2><i class="fas fa-robot"></i> AI-Generated RFP</h2>
+                            <p>Review and edit the structured RFP generated by our AI</p>
+                        </div>
+                        
+                        <div id="loading-ai" class="loading-section hidden">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>AI is processing your request...</p>
+                            </div>
+                        </div>
+                        
+                        <div id="generated-rfp" class="rfp-form hidden">
+                            <form id="rfp-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="rfp-title">Title</label>
+                                        <input type="text" id="rfp-title" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="rfp-budget">Budget ($)</label>
+                                        <input type="number" id="rfp-budget" min="0" step="0.01" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="rfp-deadline">Deadline</label>
+                                    <input type="date" id="rfp-deadline" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="rfp-description">Description</label>
+                                    <textarea id="rfp-description" rows="4" required></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Requirements</label>
+                                    <div id="requirements-container">
+                                        <div class="requirements-table">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Item</th>
+                                                        <th>Quantity</th>
+                                                        <th>Specifications</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="requirements-tbody">
+                                                </tbody>
+                                            </table>
+                                            <button type="button" class="btn btn-outline btn-sm" onclick="addRequirement()">
+                                                <i class="fas fa-plus"></i> Add Item
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="payment-terms">Payment Terms</label>
+                                        <input type="text" id="payment-terms" placeholder="e.g., Net 30 days">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="warranty-terms">Warranty Requirements</label>
+                                        <input type="text" id="warranty-terms" placeholder="e.g., 1 year warranty">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="special-conditions">Special Conditions</label>
+                                    <textarea id="special-conditions" rows="3" placeholder="Any additional requirements or conditions"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="step-actions">
+                            <button class="btn btn-outline" onclick="goBack()">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </button>
+                            <button class="btn btn-primary btn-lg" onclick="saveRFP()">
+                                <i class="fas fa-save"></i> Save RFP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/rfp.js"></script>
+    <script>
+        // Example prompts
+        const examples = {
+            laptops: "I need 20 laptops with 16GB RAM, Intel i7 processors, and 15 monitors 27-inch 4K displays. Budget $50,000. Delivery in 30 days. Payment net 30. 1 year warranty needed.",
+            furniture: "We need office furniture for 50 employees: 50 desks, 50 ergonomic chairs, 10 meeting room tables, and storage cabinets. Budget $25,000. Delivery within 45 days. Payment terms 50% upfront, 50% on delivery.",
+            software: "Looking for Microsoft Office 365 licenses for 100 users, plus Adobe Creative Cloud for 10 designers. Annual budget $15,000. Need implementation within 2 weeks. Payment annually.",
+            infrastructure: "Need to upgrade our server infrastructure: 3 high-performance servers, 2 backup systems, network switches, and UPS systems. Budget $75,000. Installation within 60 days. 3-year warranty required."
+        };
+
+        function setExample(type) {
+            document.getElementById('natural-input').value = examples[type];
+        }
+
+        function goBack() {
+            document.getElementById('step-1').classList.remove('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+        }
+
+        function showStep2() {
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
+        }
+
+        function showLoadingAI() {
+            document.getElementById('loading-ai').classList.remove('hidden');
+            document.getElementById('generated-rfp').classList.add('hidden');
+        }
+
+        function hideLoadingAI() {
+            document.getElementById('loading-ai').classList.add('hidden');
+            document.getElementById('generated-rfp').classList.remove('hidden');
+        }
+
+        async function generateRFP() {
+            const input = document.getElementById('natural-input').value.trim();
+            
+            if (!input) {
+                showToast('Please enter a procurement description', 'error');
+                return;
+            }
+
+            showStep2();
+            showLoadingAI();
+
+            try {
+                const response = await fetch('/api/rfp/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: input
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Populate form with AI-generated data
+                    const rfp = data.rfp;
+                    const parsed = data.ai_parsed;
+
+                    document.getElementById('rfp-title').value = rfp.title;
+                    document.getElementById('rfp-budget').value = rfp.budget;
+                    document.getElementById('rfp-deadline').value = rfp.deadline ? rfp.deadline.split('T')[0] : '';
+                    document.getElementById('rfp-description').value = rfp.description;
+                    document.getElementById('payment-terms').value = parsed.payment_terms || '';
+                    document.getElementById('warranty-terms').value = parsed.warranty || '';
+                    document.getElementById('special-conditions').value = parsed.special_conditions || '';
+
+                    // Populate requirements
+                    populateRequirements(parsed.items || []);
+
+                    hideLoadingAI();
+                    showToast('RFP generated successfully!', 'success');
+                } else {
+                    hideLoadingAI();
+                    showToast('Error generating RFP: ' + data.error, 'error');
+                    goBack();
+                }
+            } catch (error) {
+                hideLoadingAI();
+                console.error('Error generating RFP:', error);
+                showToast('Error generating RFP', 'error');
+                goBack();
+            }
+        }
+
+        function populateRequirements(items) {
+            const tbody = document.getElementById('requirements-tbody');
+            tbody.innerHTML = '';
+
+            items.forEach((item, index) => {
+                addRequirementRow(item.name || '', item.quantity || 1, item.specs || '');
+            });
+        }
+
+        function addRequirement() {
+            addRequirementRow('', 1, '');
+        }
+
+        function addRequirementRow(name = '', quantity = 1, specs = '') {
+            const tbody = document.getElementById('requirements-tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="item-name" value="${name}" placeholder="Item name" required></td>
+                <td><input type="number" class="item-quantity" value="${quantity}" min="1" placeholder="Qty" required></td>
+                <td><input type="text" class="item-specs" value="${specs}" placeholder="Specifications"></td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeRequirement(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function removeRequirement(button) {
+            const row = button.closest('tr');
+            row.remove();
+        }
+
+        async function saveRFP() {
+            const form = document.getElementById('rfp-form');
+            
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Collect requirements
+            const requirements = [];
+            const rows = document.querySelectorAll('#requirements-tbody tr');
+            
+            rows.forEach(row => {
+                const name = row.querySelector('.item-name').value.trim();
+                const quantity = parseInt(row.querySelector('.item-quantity').value);
+                const specs = row.querySelector('.item-specs').value.trim();
+                
+                if (name && quantity > 0) {
+                    requirements.push({ name, quantity, specs });
+                }
+            });
+
+            if (requirements.length === 0) {
+                showToast('Please add at least one requirement', 'error');
+                return;
+            }
+
+            const rfpData = {
+                title: document.getElementById('rfp-title').value,
+                budget: parseFloat(document.getElementById('rfp-budget').value),
+                deadline: document.getElementById('rfp-deadline').value,
+                description: document.getElementById('rfp-description').value,
+                requirements: requirements,
+                terms: {
+                    payment_terms: document.getElementById('payment-terms').value,
+                    warranty: document.getElementById('warranty-terms').value,
+                    special_conditions: document.getElementById('special-conditions').value
+                }
+            };
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/rfp/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: rfpData.description,
+                        ...rfpData
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('RFP saved successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    showToast('Error saving RFP: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error saving RFP:', error);
+                showToast('Error saving RFP', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Initialize with one empty requirement row
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-resize textarea
+            const textarea = document.getElementById('natural-input');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+        });
+    </script>
+</body>
+</html>

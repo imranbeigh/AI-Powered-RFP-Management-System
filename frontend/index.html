@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered RFP Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-file-contract"></i>
+                <span>RFP Manager</span>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link active">
+                    <i class="fas fa-dashboard"></i> Dashboard
+                </a>
+                <a href="create-rfp.html" class="nav-link">
+                    <i class="fas fa-plus-circle"></i> Create RFP
+                </a>
+                <a href="vendors.html" class="nav-link">
+                    <i class="fas fa-users"></i> Vendors
+                </a>
+                <a href="send-rfp.html" class="nav-link">
+                    <i class="fas fa-paper-plane"></i> Send RFP
+                </a>
+                <a href="proposals.html" class="nav-link">
+                    <i class="fas fa-chart-bar"></i> Proposals
+                </a>
+            </div>
+            <div class="nav-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <h1>Dashboard</h1>
+                <p>Manage your RFPs and vendor proposals efficiently</p>
+            </header>
+
+            <!-- Stats Cards -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="total-rfps">0</h3>
+                            <p class="stat-label">Total RFPs</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: var(--gradient-secondary);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="active-vendors">0</h3>
+                            <p class="stat-label">Active Vendors</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: var(--gradient-accent);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="pending-proposals">0</h3>
+                            <p class="stat-label">Pending Proposals</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: var(--gradient-dark);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" id="completed-rfps">0</h3>
+                            <p class="stat-label">Completed RFPs</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="actions-grid">
+                    <a href="create-rfp.html" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <h3>Create New RFP</h3>
+                        <p>Generate RFP from natural language</p>
+                    </a>
+                    
+                    <a href="vendors.html" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h3>Add Vendor</h3>
+                        <p>Register new vendor information</p>
+                    </a>
+                    
+                    <a href="send-rfp.html" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>Send RFP</h3>
+                        <p>Distribute RFP to vendors</p>
+                    </a>
+                    
+                    <button class="action-card" onclick="checkEmails()">
+                        <div class="action-icon">
+                            <i class="fas fa-sync"></i>
+                        </div>
+                        <h3>Check Emails</h3>
+                        <p>Process vendor responses</p>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Recent RFPs -->
+            <section class="recent-rfps">
+                <div class="section-header">
+                    <h2>Recent RFPs</h2>
+                    <button class="btn btn-outline" onclick="loadRFPs()">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Budget</th>
+                                <th>Status</th>
+                                <th>Proposals</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rfps-table-body">
+                            <tr>
+                                <td colspan="6" class="loading-row">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading RFPs...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Load dashboard data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            loadRFPs();
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load stats
+                const [rfpsResponse, vendorsResponse, proposalsResponse] = await Promise.all([
+                    fetch('/api/rfp/list'),
+                    fetch('/api/vendor/list'),
+                    fetch('/api/proposal/list')
+                ]);
+
+                const rfpsData = await rfpsResponse.json();
+                const vendorsData = await vendorsResponse.json();
+                const proposalsData = await proposalsResponse.json();
+
+                if (rfpsData.success) {
+                    const rfps = rfpsData.rfps;
+                    document.getElementById('total-rfps').textContent = rfps.length;
+                    document.getElementById('completed-rfps').textContent = 
+                        rfps.filter(rfp => rfp.status === 'closed').length;
+                }
+
+                if (vendorsData.success) {
+                    document.getElementById('active-vendors').textContent = vendorsData.vendors.length;
+                }
+
+                if (proposalsData.success) {
+                    document.getElementById('pending-proposals').textContent = proposalsData.proposals.length;
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        async function loadRFPs() {
+            const tbody = document.getElementById('rfps-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="loading-row"><i class="fas fa-spinner fa-spin"></i> Loading RFPs...</td></tr>';
+
+            try {
+                const response = await fetch('/api/rfp/list');
+                const data = await response.json();
+
+                if (data.success) {
+                    const rfps = data.rfps.slice(0, 5); // Show only recent 5
+                    
+                    if (rfps.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="empty-row">No RFPs found. Create your first RFP!</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = rfps.map(rfp => `
+                        <tr>
+                            <td>
+                                <div class="rfp-title">
+                                    <strong>${rfp.title}</strong>
+                                    <small>${rfp.description.substring(0, 50)}...</small>
+                                </div>
+                            </td>
+                            <td>$${rfp.budget.toLocaleString()}</td>
+                            <td>
+                                <span class="status-badge status-${rfp.status}">
+                                    ${rfp.status.charAt(0).toUpperCase() + rfp.status.slice(1)}
+                                </span>
+                            </td>
+                            <td>${rfp.proposals_count}</td>
+                            <td>${new Date(rfp.created_at).toLocaleDateString()}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="viewRFP(${rfp.id})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline" onclick="viewProposals(${rfp.id})">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="error-row">Error loading RFPs</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading RFPs:', error);
+                tbody.innerHTML = '<tr><td colspan="6" class="error-row">Error loading RFPs</td></tr>';
+            }
+        }
+
+        function viewRFP(rfpId) {
+            window.location.href = `proposals.html?rfp_id=${rfpId}`;
+        }
+
+        function viewProposals(rfpId) {
+            window.location.href = `proposals.html?rfp_id=${rfpId}`;
+        }
+
+        async function checkEmails() {
+            showLoading();
+            try {
+                const response = await fetch('/api/email/check', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(`Processed ${data.processed_emails} new emails`, 'success');
+                    loadDashboardData();
+                    loadRFPs();
+                } else {
+                    showToast('Error checking emails', 'error');
+                }
+            } catch (error) {
+                console.error('Error checking emails:', error);
+                showToast('Error checking emails', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+    </script>
+</body>
+</html>

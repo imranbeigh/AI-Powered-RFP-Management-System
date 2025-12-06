@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send RFP - AI-Powered RFP Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-file-contract"></i>
+                <span>RFP Manager</span>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-dashboard"></i> Dashboard
+                </a>
+                <a href="create-rfp.html" class="nav-link">
+                    <i class="fas fa-plus-circle"></i> Create RFP
+                </a>
+                <a href="vendors.html" class="nav-link">
+                    <i class="fas fa-users"></i> Vendors
+                </a>
+                <a href="send-rfp.html" class="nav-link active">
+                    <i class="fas fa-paper-plane"></i> Send RFP
+                </a>
+                <a href="proposals.html" class="nav-link">
+                    <i class="fas fa-chart-bar"></i> Proposals
+                </a>
+            </div>
+            <div class="nav-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <h1>Send RFP</h1>
+                <p>Distribute your RFP to selected vendors</p>
+            </header>
+
+            <!-- RFP Selection -->
+            <section class="rfp-selection">
+                <div class="form-group">
+                    <label for="rfp-select">Select RFP to Send</label>
+                    <select id="rfp-select" class="form-select" onchange="loadRFPDetails()">
+                        <option value="">Choose an RFP...</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- RFP Details Preview -->
+            <section id="rfp-preview" class="rfp-preview hidden">
+                <h2>RFP Details</h2>
+                <div class="rfp-summary-card">
+                    <div class="rfp-summary-header">
+                        <h3 id="preview-title"></h3>
+                        <span class="status-badge" id="preview-status"></span>
+                    </div>
+                    <div class="rfp-summary-content">
+                        <div class="summary-row">
+                            <span class="label">Budget:</span>
+                            <span class="value" id="preview-budget"></span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Deadline:</span>
+                            <span class="value" id="preview-deadline"></span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Requirements:</span>
+                            <span class="value" id="preview-requirements-count"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Vendor Selection -->
+            <section id="vendor-selection" class="vendor-selection hidden">
+                <div class="section-header">
+                    <h2>Select Vendors</h2>
+                    <div class="vendor-controls">
+                        <button class="btn btn-outline btn-sm" onclick="selectAllVendors()">
+                            <i class="fas fa-check-square"></i> Select All
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="deselectAllVendors()">
+                            <i class="fas fa-square"></i> Deselect All
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="vendor-list">
+                    <div id="vendors-container" class="vendors-grid">
+                        <div class="loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading vendors...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Email Preview -->
+            <section id="email-preview" class="email-preview hidden">
+                <h2>Email Preview</h2>
+                <div class="email-preview-card">
+                    <div class="email-header">
+                        <div class="email-from">
+                            <span class="label">From:</span>
+                            <span class="value">procurement@company.com</span>
+                        </div>
+                        <div class="email-to">
+                            <span class="label">To:</span>
+                            <span class="value" id="email-recipients">Selected vendors</span>
+                        </div>
+                        <div class="email-subject">
+                            <span class="label">Subject:</span>
+                            <span class="value" id="email-subject-text">Request for Proposal</span>
+                        </div>
+                    </div>
+                    <div class="email-body">
+                        <div id="email-content" class="email-text"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Send Actions -->
+            <section id="send-actions" class="send-actions hidden">
+                <div class="action-buttons">
+                    <button class="btn btn-outline" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button class="btn btn-primary btn-lg" onclick="sendRFP()">
+                        <i class="fas fa-paper-plane"></i> Send RFP
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Send Confirmation Modal -->
+    <div id="send-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirm Send</h2>
+                <button class="modal-close" onclick="closeSendModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <p>You are about to send the RFP to <strong id="send-vendor-count">0</strong> vendors.</p>
+                <div id="selected-vendors-list" class="selected-vendors-list"></div>
+                <p class="warning">This action cannot be undone. The vendors will receive the RFP via email.</p>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeSendModal()">
+                    Cancel
+                </button>
+                <button class="btn btn-primary" onclick="confirmSend()">
+                    <i class="fas fa-paper-plane"></i> Send Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Sending RFP...</p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        let rfps = [];
+        let vendors = [];
+        let selectedRFP = null;
+        let selectedVendors = new Set();
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRFPs();
+            loadVendors();
+        });
+
+        async function loadRFPs() {
+            try {
+                const response = await fetch('/api/rfp/list');
+                const data = await response.json();
+
+                if (data.success) {
+                    rfps = data.rfps.filter(rfp => rfp.status === 'draft');
+                    populateRFPSelect();
+                } else {
+                    showToast('Error loading RFPs', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading RFPs:', error);
+                showToast('Error loading RFPs', 'error');
+            }
+        }
+
+        function populateRFPSelect() {
+            const select = document.getElementById('rfp-select');
+            
+            if (rfps.length === 0) {
+                select.innerHTML = '<option value="">No draft RFPs available</option>';
+                return;
+            }
+
+            select.innerHTML = '<option value="">Choose an RFP...</option>' +
+                rfps.map(rfp => `
+                    <option value="${rfp.id}">
+                        ${rfp.title} - $${rfp.budget.toLocaleString()} - ${new Date(rfp.created_at).toLocaleDateString()}
+                    </option>
+                `).join('');
+        }
+
+        async function loadVendors() {
+            try {
+                const response = await fetch('/api/vendor/list');
+                const data = await response.json();
+
+                if (data.success) {
+                    vendors = data.vendors;
+                } else {
+                    showToast('Error loading vendors', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading vendors:', error);
+                showToast('Error loading vendors', 'error');
+            }
+        }
+
+        function loadRFPDetails() {
+            const rfpId = document.getElementById('rfp-select').value;
+            
+            if (!rfpId) {
+                hideAllSections();
+                return;
+            }
+
+            selectedRFP = rfps.find(rfp => rfp.id == rfpId);
+            if (!selectedRFP) return;
+
+            // Show RFP preview
+            showRFPPreview();
+            
+            // Show vendor selection
+            showVendorSelection();
+            
+            // Show email preview
+            showEmailPreview();
+            
+            // Show send actions
+            document.getElementById('send-actions').classList.remove('hidden');
+        }
+
+        function showRFPPreview() {
+            document.getElementById('rfp-preview').classList.remove('hidden');
+            
+            document.getElementById('preview-title').textContent = selectedRFP.title;
+            document.getElementById('preview-status').textContent = selectedRFP.status;
+            document.getElementById('preview-status').className = `status-badge status-${selectedRFP.status}`;
+            document.getElementById('preview-budget').textContent = `$${selectedRFP.budget.toLocaleString()}`;
+            document.getElementById('preview-deadline').textContent = selectedRFP.deadline ? 
+                new Date(selectedRFP.deadline).toLocaleDateString() : 'Not set';
+            document.getElementById('preview-requirements-count').textContent = 
+                `${selectedRFP.requirements.length} items`;
+        }
+
+        function showVendorSelection() {
+            document.getElementById('vendor-selection').classList.remove('hidden');
+            
+            const container = document.getElementById('vendors-container');
+            
+            if (vendors.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>No vendors available</h3>
+                        <p>Add vendors before sending RFPs</p>
+                        <a href="vendors.html" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Vendors
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = vendors.map(vendor => `
+                <div class="vendor-select-card">
+                    <div class="vendor-checkbox">
+                        <input type="checkbox" id="vendor-${vendor.id}" value="${vendor.id}" onchange="toggleVendor(${vendor.id})">
+                        <label for="vendor-${vendor.id}" class="checkbox-label">
+                            <i class="fas fa-check"></i>
+                        </label>
+                    </div>
+                    <div class="vendor-info">
+                        <h4>${vendor.name}</h4>
+                        <p>${vendor.company || 'No company'}</p>
+                        <p class="vendor-email">${vendor.email}</p>
+                        <div class="vendor-categories">
+                            ${vendor.categories.map(cat => `<span class="category-tag">${cat}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showEmailPreview() {
+            document.getElementById('email-preview').classList.remove('hidden');
+            
+            const emailContent = `
+Dear Vendor,
+
+We are pleased to invite you to submit a proposal for the following requirement:
+
+TITLE: ${selectedRFP.title}
+DESCRIPTION: ${selectedRFP.description}
+BUDGET: $${selectedRFP.budget.toLocaleString()}
+DEADLINE: ${selectedRFP.deadline ? new Date(selectedRFP.deadline).toLocaleDateString() : 'Not set'}
+
+REQUIREMENTS:
+${selectedRFP.requirements.map(req => `- ${req.name}: ${req.quantity} units${req.specs ? ` (${req.specs})` : ''}`).join('\n')}
+
+TERMS:
+${selectedRFP.terms.payment_terms ? `- Payment Terms: ${selectedRFP.terms.payment_terms}` : ''}
+${selectedRFP.terms.warranty ? `- Warranty: ${selectedRFP.terms.warranty}` : ''}
+${selectedRFP.terms.special_conditions ? `- Special Conditions: ${selectedRFP.terms.special_conditions}` : ''}
+
+Please submit your proposal including:
+- Detailed pricing breakdown
+- Delivery timeline
+- Warranty information
+- Payment terms
+- Any special conditions
+
+Submit your response by replying to this email before the deadline.
+
+Best regards,
+Procurement Team
+            `.trim();
+            
+            document.getElementById('email-content').textContent = emailContent;
+            document.getElementById('email-subject-text').textContent = `Request for Proposal: ${selectedRFP.title}`;
+        }
+
+        function toggleVendor(vendorId) {
+            if (selectedVendors.has(vendorId)) {
+                selectedVendors.delete(vendorId);
+            } else {
+                selectedVendors.add(vendorId);
+            }
+            updateEmailRecipients();
+        }
+
+        function selectAllVendors() {
+            vendors.forEach(vendor => {
+                selectedVendors.add(vendor.id);
+                document.getElementById(`vendor-${vendor.id}`).checked = true;
+            });
+            updateEmailRecipients();
+        }
+
+        function deselectAllVendors() {
+            selectedVendors.clear();
+            vendors.forEach(vendor => {
+                document.getElementById(`vendor-${vendor.id}`).checked = false;
+            });
+            updateEmailRecipients();
+        }
+
+        function updateEmailRecipients() {
+            const count = selectedVendors.size;
+            const recipientsElement = document.getElementById('email-recipients');
+            
+            if (count === 0) {
+                recipientsElement.textContent = 'No vendors selected';
+            } else if (count === 1) {
+                const vendor = vendors.find(v => selectedVendors.has(v.id));
+                recipientsElement.textContent = vendor.email;
+            } else {
+                recipientsElement.textContent = `${count} vendors`;
+            }
+        }
+
+        function hideAllSections() {
+            document.getElementById('rfp-preview').classList.add('hidden');
+            document.getElementById('vendor-selection').classList.add('hidden');
+            document.getElementById('email-preview').classList.add('hidden');
+            document.getElementById('send-actions').classList.add('hidden');
+        }
+
+        function goBack() {
+            document.getElementById('rfp-select').value = '';
+            selectedRFP = null;
+            selectedVendors.clear();
+            hideAllSections();
+        }
+
+        function openSendModal() {
+            if (selectedVendors.size === 0) {
+                showToast('Please select at least one vendor', 'error');
+                return;
+            }
+
+            const selectedVendorsList = Array.from(selectedVendors).map(vendorId => {
+                const vendor = vendors.find(v => v.id === vendorId);
+                return vendor;
+            });
+
+            document.getElementById('send-vendor-count').textContent = selectedVendors.size;
+            document.getElementById('selected-vendors-list').innerHTML = selectedVendorsList.map(vendor => `
+                <div class="selected-vendor-item">
+                    <i class="fas fa-user"></i>
+                    <div>
+                        <strong>${vendor.name}</strong>
+                        <small>${vendor.email}</small>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('send-modal').classList.remove('hidden');
+        }
+
+        function closeSendModal() {
+            document.getElementById('send-modal').classList.add('hidden');
+        }
+
+        function sendRFP() {
+            openSendModal();
+        }
+
+        async function confirmSend() {
+            closeSendModal();
+            showLoading();
+
+            try {
+                const response = await fetch(`/api/rfp/${selectedRFP.id}/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        vendor_ids: Array.from(selectedVendors)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(`RFP sent to ${data.sent_count} out of ${data.total_vendors} vendors!`, 'success');
+                    
+                    if (data.failed_vendors.length > 0) {
+                        showToast(`Failed to send to: ${data.failed_vendors.join(', ')}`, 'warning');
+                    }
+                    
+                    // Go back to dashboard after successful send
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    showToast('Error sending RFP: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error sending RFP:', error);
+                showToast('Error sending RFP', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+    </script>
+</body>
+</html>
